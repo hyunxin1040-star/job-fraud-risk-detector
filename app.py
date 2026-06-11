@@ -12,12 +12,86 @@ MODEL_PATH = BASE_DIR / "final_job_fraud_pipeline.pkl"
 final_pipeline = joblib.load(MODEL_PATH)
 
 
+def detect_red_flags(text):
+    lower_text = str(text).lower()
+    red_flags = []
+
+    suspicious_patterns = {
+        "UpfrontPaymentRisk": [
+            "training fee",
+            "processing fee",
+            "registration fee",
+            "application fee",
+            "deposit",
+            "pay upfront",
+            "send money",
+            "wire transfer",
+            "western union"
+        ],
+        "IdentityTheftRisk": [
+            "personal information",
+            "bank account",
+            "bank details",
+            "passport",
+            "ssn",
+            "social security",
+            "driver license",
+            "id card",
+            "credit card"
+        ],
+        "UnrealisticOfferRisk": [
+            "no experience",
+            "quick money",
+            "easy money",
+            "earn money fast",
+            "high income",
+            "guaranteed income",
+            "weekly payment",
+            "earn $",
+            "work less"
+        ],
+        "RemoteScamRisk": [
+            "work from home",
+            "remote",
+            "flexible hours",
+            "anywhere",
+            "part time from home"
+        ],
+        "VagueUrgencyRisk": [
+            "urgent",
+            "urgent hiring",
+            "start immediately",
+            "immediate start",
+            "limited position",
+            "no interview",
+            "simple work"
+        ],
+        "CryptoPaymentRisk": [
+            "bitcoin",
+            "crypto",
+            "cryptocurrency"
+        ]
+    }
+
+    for flag_name, keywords in suspicious_patterns.items():
+        if any(keyword in lower_text for keyword in keywords):
+            red_flags.append(flag_name)
+
+    if len(str(text).split()) < 30:
+        red_flags.append("TooShortDescription")
+
+    if len(red_flags) == 0:
+        red_flags.append("NoObviousRuleBasedRedFlag")
+
+    return red_flags
+
+
 @app.route("/", methods=["GET", "POST"])
 def home():
     result = None
 
     if request.method == "POST":
-        text = request.form["job_text"]
+        text = request.form.get("job_text", "")
 
         prediction = final_pipeline.predict([text])[0]
         probability = final_pipeline.predict_proba([text])[0][1]
@@ -32,35 +106,11 @@ def home():
             risk_level = "LowRisk"
 
         if prediction == 1:
-            prediction_text = "Fraudulent Job Posting"
+            prediction_text = "FraudulentJobPosting"
         else:
-            prediction_text = "Real Job Posting"
+            prediction_text = "LegitimateJobPosting"
 
-        red_flags = []
-        lower_text = text.lower()
-
-        suspicious_words = [
-            "wire transfer",
-            "no experience",
-            "quick money",
-            "work from home",
-            "urgent",
-            "personal information",
-            "bank account",
-            "training fee",
-            "processing fee",
-            "send money",
-            "western union",
-            "bitcoin",
-            "crypto"
-        ]
-
-        for word in suspicious_words:
-            if word in lower_text:
-                red_flags.append(word)
-
-        if len(red_flags) == 0:
-            red_flags.append("No obvious keyword-based red flags detected")
+        red_flags = detect_red_flags(text)
 
         result = {
             "prediction": prediction_text,
@@ -72,7 +122,6 @@ def home():
 
     return render_template("index.html", result=result)
 
-app = Flask(__name__)
 
 if __name__ == "__main__":
-    app.run()
+    app.run(debug=True)
