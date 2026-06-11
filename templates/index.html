@@ -1,0 +1,326 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Job Fraud Risk Detector</title>
+
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            min-height: 100vh;
+            font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "Segoe UI", Arial, sans-serif;
+            background:
+                radial-gradient(circle at top left, #f4f7ff 0, transparent 35%),
+                radial-gradient(circle at top right, #eef8ff 0, transparent 32%),
+                linear-gradient(180deg, #fbfbfd 0%, #f5f5f7 100%);
+            color: #1d1d1f;
+        }
+
+        .page {
+            width: 92%;
+            max-width: 980px;
+            margin: 0 auto;
+            padding: 72px 0;
+        }
+
+        .hero {
+            text-align: center;
+            margin-bottom: 38px;
+        }
+
+        .eyebrow {
+            display: inline-block;
+            padding: 7px 14px;
+            border-radius: 999px;
+            background: rgba(0, 113, 227, 0.08);
+            color: #0066cc;
+            font-size: 13px;
+            font-weight: 700;
+            margin-bottom: 18px;
+        }
+
+        h1 {
+            font-size: 56px;
+            line-height: 1.04;
+            letter-spacing: -1.8px;
+            margin: 0;
+            font-weight: 760;
+        }
+
+        .subtitle {
+            max-width: 720px;
+            margin: 18px auto 0;
+            font-size: 19px;
+            line-height: 1.55;
+            color: #6e6e73;
+        }
+
+        .card {
+            background: rgba(255, 255, 255, 0.8);
+            backdrop-filter: blur(24px);
+            border: 1px solid rgba(255, 255, 255, 0.9);
+            border-radius: 32px;
+            box-shadow: 0 24px 70px rgba(0, 0, 0, 0.08);
+            padding: 36px;
+            margin-bottom: 30px;
+        }
+
+        textarea {
+            width: 100%;
+            min-height: 250px;
+            padding: 20px;
+            border: 1px solid #d2d2d7;
+            border-radius: 24px;
+            resize: vertical;
+            font-size: 16px;
+            line-height: 1.6;
+            color: #1d1d1f;
+            background: rgba(255,255,255,0.94);
+            outline: none;
+            transition: all 0.2s ease;
+        }
+
+        textarea:focus {
+            border-color: #0071e3;
+            box-shadow: 0 0 0 4px rgba(0, 113, 227, 0.12);
+        }
+
+        button {
+            margin-top: 18px;
+            width: 100%;
+            border: none;
+            border-radius: 999px;
+            padding: 16px 20px;
+            font-size: 17px;
+            font-weight: 700;
+            color: white;
+            background: #0071e3;
+            cursor: pointer;
+            box-shadow: 0 12px 24px rgba(0, 113, 227, 0.22);
+        }
+
+        button:hover {
+            background: #0077ed;
+            transform: translateY(-1px);
+        }
+
+        .result {
+            margin-top: 30px;
+            padding: 30px;
+            border-radius: 28px;
+            background: #ffffff;
+            border: 1px solid #e5e5ea;
+        }
+
+        .result-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            gap: 16px;
+            margin-bottom: 18px;
+        }
+
+        .result-title {
+            margin: 0;
+            font-size: 27px;
+            letter-spacing: -0.5px;
+        }
+
+        .pill {
+            padding: 8px 14px;
+            border-radius: 999px;
+            font-size: 13px;
+            font-weight: 800;
+            white-space: nowrap;
+        }
+
+        .HighRisk {
+            color: #b42318;
+            background: #fee4e2;
+        }
+
+        .MediumRisk {
+            color: #b54708;
+            background: #fef0c7;
+        }
+
+        .LowRisk {
+            color: #027a48;
+            background: #d1fadf;
+        }
+
+        .score {
+            font-size: 62px;
+            font-weight: 780;
+            letter-spacing: -2.2px;
+            margin: 8px 0 2px;
+        }
+
+        .score-caption {
+            color: #6e6e73;
+            margin-bottom: 24px;
+            font-size: 15px;
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 16px;
+            margin: 20px 0;
+        }
+
+        .mini-card {
+            border-radius: 23px;
+            background: #f5f5f7;
+            padding: 18px;
+        }
+
+        .label {
+            font-size: 13px;
+            color: #6e6e73;
+            margin-bottom: 7px;
+            font-weight: 700;
+        }
+
+        .value {
+            font-size: 18px;
+            font-weight: 750;
+            word-break: break-word;
+        }
+
+        .section-title {
+            margin: 30px 0 8px;
+            font-size: 22px;
+            font-weight: 780;
+            letter-spacing: -0.3px;
+        }
+
+        .flags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-top: 10px;
+        }
+
+        .flag {
+            padding: 8px 12px;
+            border-radius: 999px;
+            background: #f2f2f7;
+            color: #1d1d1f;
+            font-size: 13px;
+            font-weight: 700;
+        }
+
+        .text-box {
+            margin-top: 14px;
+            padding: 18px;
+            border-radius: 20px;
+            background: #f5f5f7;
+            color: #424245;
+            line-height: 1.58;
+            white-space: pre-wrap;
+            max-height: 230px;
+            overflow-y: auto;
+            font-size: 14px;
+        }
+
+        .note {
+            margin-top: 24px;
+            color: #86868b;
+            font-size: 13px;
+            line-height: 1.55;
+            text-align: center;
+        }
+
+        @media (max-width: 760px) {
+            .page {
+                padding: 42px 0;
+            }
+
+            h1 {
+                font-size: 38px;
+            }
+
+            .card {
+                padding: 22px;
+                border-radius: 25px;
+            }
+
+            .grid {
+                grid-template-columns: 1fr;
+            }
+
+            .result-header {
+                flex-direction: column;
+            }
+
+            .score {
+                font-size: 46px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <main class="page">
+        <section class="hero">
+            <div class="eyebrow">ML-Based Hiring Safety Tool</div>
+            <h1>Job Fraud Risk Detector</h1>
+            <p class="subtitle">
+                Paste a full English job posting. The system predicts whether it may be fraudulent,
+                calculates a risk score, and highlights suspicious red flags.
+            </p>
+        </section>
+
+        <section class="card">
+            <form action="/" method="POST">
+                <textarea name="job_text" placeholder="Paste the full English job posting text here..." required>{% if result %}{{ result.input_text }}{% endif %}</textarea>
+                <button type="submit">Analyze Job Posting</button>
+            </form>
+
+            {% if result %}
+            <div class="result">
+                <div class="result-header">
+                    <h2 class="result-title">Prediction Result:</h2>
+                    <span class="pill {{ result.risk_level }}">{{ result.risk_level }}</span>
+                </div>
+
+                <div class="score">{{ result.risk_score }} / 100</div>
+                <div class="score-caption">Fraud Risk Score</div>
+
+                <div class="grid">
+                    <div class="mini-card">
+                        <div class="label">Prediction</div>
+                        <div class="value">{{ result.prediction }}</div>
+                    </div>
+
+                    <div class="mini-card">
+                        <div class="label">Risk Level</div>
+                        <div class="value">{{ result.risk_level }}</div>
+                    </div>
+                </div>
+
+                <div class="section-title">Detected Red Flags</div>
+                <div class="flags">
+                    {% for flag in result.red_flags %}
+                        <span class="flag">{{ flag }}</span>
+                    {% endfor %}
+                </div>
+
+                <div class="section-title">Submitted Text</div>
+                <div class="text-box">{{ result.input_text }}</div>
+            </div>
+            {% endif %}
+
+            <p class="note">
+                This tool is designed as a machine learning-based warning support system.
+                It should not be used as a final legal, hiring, or employment decision.
+            </p>
+        </section>
+    </main>
+</body>
+</html>
